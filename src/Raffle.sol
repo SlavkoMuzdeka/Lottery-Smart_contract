@@ -32,6 +32,11 @@ contract Raffle is VRFConsumerBaseV2Plus {
     error Raffle__TransferFailed();
     error Raffle__TimeHasNotPassed();
     error Raffle__SendMoreToEnterRaffle();
+    error Raffle__UpkeepNotNeeded(
+        uint balance,
+        uint playersLength,
+        uint raffleState
+    );
 
     /* Type declarations */
     enum RaffleState {
@@ -85,9 +90,16 @@ contract Raffle is VRFConsumerBaseV2Plus {
         emit RaffleEntered(msg.sender);
     }
 
-    function pickWinner() external returns (uint) {
-        bool timeHasPassed = (block.timestamp - s_lastTimeStamp) > i_interval;
-        require(timeHasPassed, Raffle__TimeHasNotPassed());
+    function performUpkeep() external returns (uint) {
+        (bool upkeepNeeded, ) = checkUpkeep();
+        require(
+            upkeepNeeded,
+            Raffle__UpkeepNotNeeded(
+                address(this).balance,
+                s_players.length,
+                uint(s_raffleState)
+            )
+        );
 
         s_raffleState = RaffleState.CALCULATING;
         uint256 requestId = s_vrfCoordinator.requestRandomWords(
@@ -120,6 +132,16 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
         (bool success, ) = recentWinner.call{value: address(this).balance}("");
         require(success, Raffle__TransferFailed());
+    }
+
+    function checkUpkeep() public view returns (bool, bytes memory) {
+        bool timeHasPassed = (block.timestamp - s_lastTimeStamp) >= i_interval;
+        bool isOpen = s_raffleState == RaffleState.OPEN;
+        bool hasBalance = address(this).balance > 0;
+        bool hasPlayers = s_players.length > 0;
+
+        bool upkeepNeeded = timeHasPassed && isOpen && hasBalance && hasPlayers;
+        return (upkeepNeeded, "0x");
     }
 
     /* Get functions */
