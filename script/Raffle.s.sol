@@ -6,7 +6,7 @@ import {Script} from "forge-std/Script.sol";
 import {HelperConfig} from "./HelperConfig.sol";
 
 contract RaffleScript is Script {
-    function deployScript() public returns (Raffle, HelperConfig) {
+    function run() external returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
         HelperConfig.NetworkConfig memory networkConfig = helperConfig
             .getConfig();
@@ -23,9 +23,5 @@ contract RaffleScript is Script {
         vm.stopBroadcast();
 
         return (raffle, helperConfig);
-    }
-
-    function run() external returns (Raffle, HelperConfig) {
-        return deployScript();
     }
 }
