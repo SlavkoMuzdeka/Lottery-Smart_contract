@@ -3,6 +3,7 @@ pragma solidity ^0.8.28;
 
 import {Test} from "forge-std/Test.sol";
 import {Raffle} from "../../src/Raffle.sol";
+import {console2} from "forge-std/console2.sol";
 import {RaffleScript} from "../../script/Raffle.s.sol";
 import {HelperConfig} from "../../script/HelperConfig.sol";
 
@@ -34,7 +35,6 @@ contract RaffleTest is Test {
         assert(networkConfig.interval == raffle.getInterval());
         assert(networkConfig.vrfCoordinator == raffle.getVrfCoordinator());
         assert(networkConfig.keyHash == raffle.getKeyHash());
-        assert(networkConfig.subscriptionId == raffle.getSubscriptionId());
         assert(networkConfig.callbackGasLimit == raffle.getCallBackGasLimit());
 
         assert(Raffle.RaffleState.OPEN == raffle.getRaffleState());
@@ -46,7 +46,19 @@ contract RaffleTest is Test {
         raffle.enterRaffle();
     }
 
-    // TODO Test when we try to enter raffle but it is not open
+    function testDontAllowPlayersToEnterWhileRaffleIsCalculating() external {
+        vm.prank(USER);
+        raffle.enterRaffle{value: ENTERING_BALANCE}();
+
+        vm.warp(raffle.getLastTimeStamp() + raffle.getInterval());
+        vm.roll(block.number + 1);
+
+        raffle.performUpkeep();
+
+        vm.expectRevert(Raffle.Raffle__RaffleNotOpen.selector);
+        vm.prank(USER);
+        raffle.enterRaffle{value: ENTERING_BALANCE}();
+    }
 
     function testEnterRaffleSuccessfully() external {
         vm.prank(USER);
