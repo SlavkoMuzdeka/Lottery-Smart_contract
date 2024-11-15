@@ -30,7 +30,6 @@ contract Raffle is VRFConsumerBaseV2Plus {
     /* Errors */
     error Raffle__RaffleNotOpen();
     error Raffle__TransferFailed();
-    error Raffle__TimeHasNotPassed();
     error Raffle__SendMoreToEnterRaffle();
     error Raffle__UpkeepNotNeeded(
         uint balance,
