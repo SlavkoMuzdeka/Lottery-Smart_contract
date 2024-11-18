@@ -61,6 +61,7 @@ contract Raffle is VRFConsumerBaseV2Plus {
     /* Events */
     event WinnerPicked(address indexed winner);
     event RaffleEntered(address indexed player);
+    event RequestedRaffleWinner(uint indexed requestId);
 
     /* Constructor */
     constructor(
@@ -101,8 +102,8 @@ contract Raffle is VRFConsumerBaseV2Plus {
         );
 
         s_raffleState = RaffleState.CALCULATING;
-        uint256 requestId = s_vrfCoordinator.requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest({
+        VRFV2PlusClient.RandomWordsRequest memory request = VRFV2PlusClient
+            .RandomWordsRequest({
                 keyHash: i_keyHash,
                 subId: i_subscriptionId,
                 requestConfirmations: REQUEST_CONFIRMATIONS,
@@ -111,8 +112,10 @@ contract Raffle is VRFConsumerBaseV2Plus {
                 extraArgs: VRFV2PlusClient._argsToBytes(
                     VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
                 )
-            })
-        );
+            });
+
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(request);
+        emit RequestedRaffleWinner(requestId);
         return requestId;
     }
 
@@ -180,5 +183,9 @@ contract Raffle is VRFConsumerBaseV2Plus {
 
     function getLastTimeStamp() external view returns (uint) {
         return s_lastTimeStamp;
+    }
+
+    function getRecentWinner() external view returns (address) {
+        return s_recentWinner;
     }
 }
