@@ -14,18 +14,24 @@ contract RaffleScript is Script {
 
         if (networkConfig.subscriptionId == 0) {
             CreateSubscription createSubscription = new CreateSubscription();
-            uint subId = createSubscription.run(networkConfig.vrfCoordinator);
-            networkConfig.subscriptionId = subId;
+            (
+                networkConfig.subscriptionId,
+                networkConfig.vrfCoordinator
+            ) = createSubscription.createSubscription(
+                networkConfig.vrfCoordinator,
+                networkConfig.account
+            );
 
             FundSubscription fundSubscription = new FundSubscription();
-            fundSubscription.run(
+            fundSubscription.fundSubscription(
                 networkConfig.vrfCoordinator,
                 networkConfig.subscriptionId,
-                networkConfig.link
+                networkConfig.link,
+                networkConfig.account
             );
         }
 
-        vm.startBroadcast();
+        vm.startBroadcast(networkConfig.account);
         Raffle raffle = new Raffle({
             entranceFee: networkConfig.entranceFee,
             interval: networkConfig.interval,
@@ -37,10 +43,11 @@ contract RaffleScript is Script {
         vm.stopBroadcast();
 
         AddConsumer addConsumer = new AddConsumer();
-        addConsumer.run(
+        addConsumer.addConsumer(
             address(raffle),
             networkConfig.vrfCoordinator,
-            networkConfig.subscriptionId
+            networkConfig.subscriptionId,
+            networkConfig.account
         );
 
         return (raffle, helperConfig);

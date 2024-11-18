@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import {LinkToken} from "../test/mock/LinkToken.sol";
 import {Script, console2} from "forge-std/Script.sol";
 import {VRFCoordinatorV2_5Mock} from "@chainlink/contracts/src/v0.8/vrf/mocks/VRFCoordinatorV2_5Mock.sol";
-import {LinkToken} from "../test/mock/LinkToken.sol";
 
 abstract contract CodeConstants {
     uint public constant LOCAL_CHAIN_ID = 31337;
@@ -27,6 +27,7 @@ contract HelperConfig is Script, CodeConstants {
         uint256 subscriptionId;
         uint32 callbackGasLimit;
         address link;
+        address account;
     }
 
     /* State variables */
@@ -75,7 +76,8 @@ contract HelperConfig is Script, CodeConstants {
             keyHash: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
             callbackGasLimit: 500000,
             subscriptionId: 0,
-            link: address(linkToken)
+            link: address(linkToken),
+            account: 0x1804c8AB1F12E6bbf3894d4083f33e07309d1f38 // This is the default address of msg.sender (it is found in forge-std/Base.sol)
         });
 
         return localNetworkConfig;
@@ -90,7 +92,8 @@ contract HelperConfig is Script, CodeConstants {
                 keyHash: 0x787d74caea10b2b357790d5b5247c2f63d1d91572a9846f780606e4d953677ae,
                 callbackGasLimit: 500000,
                 subscriptionId: 0,
-                link: 0x779877A7B0D9E8603169DdbD7836e478b4624789
+                link: 0x779877A7B0D9E8603169DdbD7836e478b4624789,
+                account: 0xA2358D11ABf324976095c7E6cfF07D6B5DE9fA09
             });
     }
 }
