@@ -8,6 +8,8 @@ update :; forge update
 
 coverage :; forge coverage
 
+format :; forge fmt
+
 test-anvil:; forge test
 
 test-sepolia :

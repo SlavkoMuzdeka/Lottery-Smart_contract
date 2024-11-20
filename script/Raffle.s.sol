@@ -9,25 +9,16 @@ import {CreateSubscription, FundSubscription, AddConsumer} from "./Interactions.
 contract RaffleScript is Script {
     function run() external returns (Raffle, HelperConfig) {
         HelperConfig helperConfig = new HelperConfig();
-        HelperConfig.NetworkConfig memory networkConfig = helperConfig
-            .getConfig();
+        HelperConfig.NetworkConfig memory networkConfig = helperConfig.getConfig();
 
         if (networkConfig.subscriptionId == 0) {
             CreateSubscription createSubscription = new CreateSubscription();
-            (
-                networkConfig.subscriptionId,
-                networkConfig.vrfCoordinator
-            ) = createSubscription.createSubscription(
-                networkConfig.vrfCoordinator,
-                networkConfig.account
-            );
+            (networkConfig.subscriptionId, networkConfig.vrfCoordinator) =
+                createSubscription.createSubscription(networkConfig.vrfCoordinator, networkConfig.account);
 
             FundSubscription fundSubscription = new FundSubscription();
             fundSubscription.fundSubscription(
-                networkConfig.vrfCoordinator,
-                networkConfig.subscriptionId,
-                networkConfig.link,
-                networkConfig.account
+                networkConfig.vrfCoordinator, networkConfig.subscriptionId, networkConfig.link, networkConfig.account
             );
         }
 
@@ -44,10 +35,7 @@ contract RaffleScript is Script {
 
         AddConsumer addConsumer = new AddConsumer();
         addConsumer.addConsumer(
-            address(raffle),
-            networkConfig.vrfCoordinator,
-            networkConfig.subscriptionId,
-            networkConfig.account
+            address(raffle), networkConfig.vrfCoordinator, networkConfig.subscriptionId, networkConfig.account
         );
 
         return (raffle, helperConfig);
